@@ -12,30 +12,36 @@ Programs are written in plain text. Binary files are not supported yet.
 
 The instructions set is quite limited, but provides enough for simple programs.
 
-In the following list, `#` refers to any 64bit signed integer. `reg` refers to a register name A-J, RT.
+In the following table, `#` refers to any 64bit signed integer. `$reg` refers to a register named A-J, RT.
 `%label` refers to a label in code, explanation below. `TOS` refers to the top of stack.
 
-0. `EXIT/HALT #`: Stop execution and exit with code #.
-1. `PUSH #`: Push a value onto the stack.
-2. `PUSHREG reg`: Push a value from a register onto the stack.
-3. `POP`: Pop the TOS value, discard value.
-4. `POPREG reg`: Pop the TOS value into a register.
-5. `SWAP`: Swap the two TOS values. E.g: [1, 3, 4, 7] -> [3, 1, 4, 7].
-6. `DUP`: Push a copy of TOS onto the stack. E.g: [3, 4, 7] -> [3, 3, 4, 7].
-7. `SET reg #`: Set the value of register.
-8. `ADD`: Add the two TOS values, pushes result onto stack.
-9. `SUB`: Subtract the two TOS values, pushes result onto stack.
-10. `MUL`: Multiply the two TOS values, pushes result onto stack.
-11. `DIV`: Divide the two TOS values, pushes result onto stack.
-12. `JMP #/%label`: Unconditionally jump to location.
-13. `JMPGZ #/%label`: Jump to location if TOS is greater than 0.
-14. `JMPLZ #/%label`: Jump to location if TOS is less than 0.
-15. `JMPEQ #/%label`: Jump to location if TOS is equal to 0.
-16. `JMPNEQ #/%label`: Jump to location if TOS is not equal to 0.
-17. `PRINT`: Print the TOS value to stdout.
-18. `PRINTS`: Print the stack to stdout.
-19. `CALL #/%label`: Call location as a function, pushes the return address to the stack. *
-20. `RET`: Return from a function call to the callee. *
+| Code | Name    | Syntax              | Desc.                                                                          |
+|------|---------|---------------------|--------------------------------------------------------------------------------|
+| 0x00 | HALT    | HALT # EXIT#        | Stop program execution returning exit code #. Exit code must be between 0-255. |
+| 0x01 | PUSHI   | PUSHI 42            | Push an integer onto the stack.                                                |
+| 0x02 | PUSHSTR | PUSHSTR "Hello"     | Push a string onto the stack.                                                  |
+| 0x03 | PUSHREG | PUSHREG $reg        | Push the value in $reg onto the stack.                                         |
+| 0x04 | POP     | POP                 | Pop TOS. Discards value.                                                       |
+| 0x05 | STORE   | STORE $reg          | Store TOS value to $reg. Does not pop stack.                                   |
+| 0x06 | SWAP    | SWAP                | Swap the two TOS values. E.g: [1, 3, 4, 7] -> [3, 1, 4, 7].                    |
+| 0x07 | DUP     | DUP                 | Push a copy of TOS onto the stack. E.g: [3, 4, 7] -> [3, 3, 4, 7].             |
+| 0x08 | ADD     | ADD                 | Add the two TOS values, pushes result onto stack.                              |
+| 0x09 | SUB     | SUB                 | Subtract the two TOS values, pushes result onto stack.                         |
+| 0x0A | MUL     | MUL                 | Multiply the two TOS values, pushes result onto stack.                         |
+| 0x0B | DIV     | DIV                 | Divide the two TOS values, pushes result onto stack.                           |
+| 0x0C | SETI    | SETI $reg #         | Set $reg to #.                                                                 |
+| 0x0D | SETSTR  | SETSTR $reg "Hello" | Set $reg to string.                                                            |
+| 0x0E | JUMP    | JUMP #/%label       | Unconditionally jump to location.                                              |
+| 0x0F | JUMPGTZ | JUMPGTZ #/%label    | Jump to location if TOS is greater than 0.                                     |
+| 0x10 | JUMPLTZ | JUMPLTZ #/%label    | Jump to location if TOS is less than 0.                                        |
+| 0x11 | JUMPEQ  | JUMPEQ #/%label     | Jump to location if TOS is equal to 0.                                         |
+| 0x12 | JUMPNEQ | JUMPNEQ #/%label    | Jump to location if TOS is not equal to 0.                                     |
+| 0x13 | PRINT   | PRINT               | Print TOS value to stdout.                                                     |
+| 0x14 | PRINTR  | PRINTR $reg         | Print value of $reg.                                                           |
+| 0x15 | DUMP    | DUMP                | Print the full stack to stdout.                                                |
+| 0x16 | DUMPR   | DUMPR               | Print all registers to stdout.                                                 |
+| 0x17 | RETURN  | RETURN              | Return from a function call to the callee. *                                   |
+| 0x18 | CALL    | CALL #/%label       | Call location as a function, pushes the return address to the stack. *         |
 
 \* Function calling is not yet finalized. It needs work.
 
@@ -47,15 +53,15 @@ it by prefixing the line with characters followed by a colon. Labels can be refe
 sign. Labels may be used before they're defined. The locations are inserted after the full source has been parsed.
 
 ```asm
-setup:  SET A 0
-        SET B 0
-loop:   PUSHREG A
-        PUSHREG B
+setup:  SETI $A 0
+        SETI $B 0
+loop:   PUSHREG $A
+        PUSHREG $B
         ADD
         PRINT
         DUP
-        POPREG A
-        POPREG B
+        STORE $A
+        STORE $B
         JMP %loop
 ```
 
@@ -67,8 +73,8 @@ end of the line. There are no block comments.
 ```asm
 ;; This is a comment for my awesome program
 
-        PUSH 0      ; Push a seed value
-loop:   PUSH 1
+        PUSHI 0     ; Push a seed value
+loop:   PUSHI 1
         ADD         ; Add one
         PRINT       ; Print value
         JMP %loop   ; Loop indefinitely
