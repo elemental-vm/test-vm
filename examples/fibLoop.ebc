@@ -1,0 +1,25 @@
+;; This file demonstrats finding the fibonnaci series using a loop
+
+        SET A 0         ; The series # we're trying to find.
+        SET B 0         ; Accumulator
+        SET C 1         ; Secondary accumulator
+        PUSH 0          ; Push 0 to survive a pop later in the loop
+loop:   PUSHREG A       ; Increment A by 1
+        PUSH 1
+        ADD
+        PRINT           ; Print current series number
+        POPREG A        ; Save new A
+        POP             ; Pop old value
+        PUSHREG B       ; Add next fib # with last
+        PUSHREG C
+        ADD
+        POPREG B        ; Save new fib to B
+        PUSHREG B       ; Get next C
+        PUSHREG C
+        SUB
+        POPREG C        ; Save next C
+        PUSHREG B       ; Reload B
+        JMPLZ %quit     ; Check for overflow
+        PRINT           ; Print Fibonnaci # for series
+        JMPGZ %loop     ; Jump to loop
+quit:   EXIT 0

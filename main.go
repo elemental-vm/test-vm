@@ -23,6 +23,9 @@ func main() {
 		os.Exit(1)
 	}
 
+	// fmt.Printf("%#v\n", program)
+	// fmt.Println(len(program))
+
 	newvm := vm.New(program)
 	os.Exit(int(newvm.Start()))
 }

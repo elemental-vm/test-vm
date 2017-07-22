@@ -1,0 +1,17 @@
+;; This file demonstrates a factorial generator using a loop.
+
+        SET A 20        ; The number of which we want the factorial
+        SET B 1         ; Continuous product
+        PUSHREG A       ; To populate A with seed value
+loop:   POPREG A        ; Pop the new value of A (A = A - 1)
+        PUSHREG A       ; Push the value of register A to stack
+        PUSHREG B       ; Push the value of register B to stack
+        MUL             ; Multiple registers A and B
+        POPREG B        ; Save product to register B
+        PUSHREG A       ; Push register A to decrement
+        PUSH 1
+        SUB             ; Subtract 1 from A
+        JMPGZ %loop     ; Loop until A == 0
+        PUSHREG B       ; Push B to print
+        PRINT           ; Print result
+        EXIT 0

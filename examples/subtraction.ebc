@@ -1,0 +1,8 @@
+;; Simple looped subtraction
+
+      PUSH 100      ; Instructions 0, 1
+Loop: PUSH 1        ; Instructions 2, 3
+      SUB           ; Instruction 4
+      PRINT         ; Instruction 5
+      JMPGZ %Loop   ; Instructions 6, 7
+      EXIT 0        ; Instructions 8, 9
