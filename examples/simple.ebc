@@ -1,0 +1,3 @@
+SETSTR $A "Hello"
+PRINTR $A
+EXIT 256

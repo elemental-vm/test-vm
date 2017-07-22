@@ -2,7 +2,7 @@
 ;; This version is significantly slower than the loop. This version can't get
 ;; to the largest int64 fib number.
 
-main:       PUSH 36     ; Push argument to fib(), series number to find
+main:       PUSHI 36    ; Push argument to fib(), series number to find
             CALL %fib   ; Call fib()
             PRINT       ; Print result
             EXIT 0
@@ -10,12 +10,12 @@ main:       PUSH 36     ; Push argument to fib(), series number to find
 fib:        SWAP                ; Swap return address with argument
             JMPEQ %fibReturn    ; If # is zero, return 0
             DUP                 ; Duplicate TOS (function parameter)
-            PUSH 1
+            PUSHI 1
             SUB                 ; Subtract 1 from series #
             JMPEQ %fibOne       ; If equal to zero, return 1
             CALL %fib           ; Call fib() recursivly, using the difference as the argument
             SWAP                ; Swap returned value with previous A
-            PUSH 2
+            PUSHI 2
             SUB                 ; Subtract 2 from series #
             CALL %fib           ; Call fib() again, using the difference as the argument
             ADD                 ; Add the two returned values

@@ -2,14 +2,21 @@ package lexer
 
 import (
 	"bufio"
+	"encoding/binary"
 	"fmt"
 	"io"
 	"os"
 	"strconv"
 	"strings"
 
+	"bytes"
+
+	"io/ioutil"
+
 	"github.com/elemental-vm/test-vm/vm"
 )
+
+var FileHeader = []byte{31, 'E', 'B', 'C'}
 
 type sub struct {
 	pos   int64
@@ -17,11 +24,14 @@ type sub struct {
 }
 
 type Lexer struct {
-	r    *bufio.Reader
+	r      *bufio.Reader
+	file   *os.File
+	simple bool
+
 	line int
 	pc   int64
 
-	program []int64
+	program []byte
 
 	labels    map[string]int64
 	labelSubs []*sub
@@ -33,16 +43,32 @@ func New(file string) (*Lexer, error) {
 		return nil, err
 	}
 
-	return &Lexer{
-		r:         bufio.NewReader(f),
-		labels:    make(map[string]int64),
-		labelSubs: make([]*sub, 0, 15),
-	}, nil
+	l := &Lexer{}
+
+	header := make([]byte, 4)
+	f.Read(header)
+	if bytes.Equal(header, FileHeader) {
+		l.simple = true
+		l.file = f
+		return l, nil
+	}
+
+	f.Seek(0, 0) // Reset reader
+	l.r = bufio.NewReader(f)
+	l.labels = make(map[string]int64)
+	l.labelSubs = make([]*sub, 0, 15)
+	return l, nil
 }
 
-func (l *Lexer) addToProgram(word int64) {
+func (l *Lexer) addToProgram(bit byte) {
 	l.pc++
-	l.program = append(l.program, word)
+	l.program = append(l.program, bit)
+}
+
+func (l *Lexer) addSliceToProgram(bytes []byte) {
+	for _, b := range bytes {
+		l.addToProgram(b)
+	}
 }
 
 func (l *Lexer) addLabelSub(label string) {
@@ -52,8 +78,17 @@ func (l *Lexer) addLabelSub(label string) {
 	})
 }
 
-func (l *Lexer) Parse() ([]int64, error) {
-	l.program = make([]int64, 0, 500)
+func (l *Lexer) Parse() ([]byte, error) {
+	if l.simple {
+		program, err := ioutil.ReadAll(l.file)
+		l.file.Close()
+		if err != nil {
+			return nil, err
+		}
+		return program, nil
+	}
+
+	l.program = make([]byte, 0, 1024)
 	quit := false
 
 	for {
@@ -98,14 +133,16 @@ func (l *Lexer) Parse() ([]int64, error) {
 
 		switch bytecode {
 		case vm.Halt:
-			err = l.parseParamOneInt(structure)
-		case vm.Push:
+			err = l.parseParamOneByte(structure)
+		case vm.PushI:
 			err = l.parseParamOneInt(structure)
 		case vm.PushReg:
 			err = l.parseParamOneRegister(structure)
-		case vm.PopReg:
+		case vm.PrintR:
 			err = l.parseParamOneRegister(structure)
-		case vm.Set:
+		case vm.Store:
+			err = l.parseParamOneRegister(structure)
+		case vm.SetI:
 			err = l.parseParamsRegInt(structure)
 		case vm.Jump:
 			err = l.parseParamOneIntOrLabel(structure)
@@ -119,6 +156,10 @@ func (l *Lexer) Parse() ([]int64, error) {
 			err = l.parseParamOneIntOrLabel(structure)
 		case vm.Call:
 			err = l.parseParamOneIntOrLabel(structure)
+		case vm.PushStr:
+			err = l.parseParamOneString(structure)
+		case vm.SetStr:
+			err = l.parseParamsRegString(structure)
 		default:
 			err = nil
 		}
@@ -134,15 +175,34 @@ func (l *Lexer) Parse() ([]int64, error) {
 	return l.program, nil
 }
 
-func (l *Lexer) parseParamOneInt(structure []string) error {
+func (l *Lexer) parseParamOneByte(structure []string) error {
 	if len(structure) != 2 {
 		return fmt.Errorf("Expected int on line %d", l.line)
 	}
+
 	code, err := strconv.ParseInt(structure[1], 10, 64)
 	if err != nil {
 		return err
 	}
-	l.addToProgram(code)
+
+	if code > 255 || code < 0 {
+		return fmt.Errorf("Exit code must be between 0-255, line %d", l.line)
+	}
+
+	l.addToProgram(byte(code))
+	return nil
+}
+
+func (l *Lexer) parseParamOneInt(structure []string) error {
+	if len(structure) != 2 {
+		return fmt.Errorf("Expected int on line %d", l.line)
+	}
+
+	code, err := strconv.ParseInt(structure[1], 10, 64)
+	if err != nil {
+		return err
+	}
+	l.addSliceToProgram(intToBytes(code))
 	return nil
 }
 
@@ -152,7 +212,14 @@ func (l *Lexer) parseParamOneIntOrLabel(structure []string) error {
 	}
 
 	if structure[1][0] == '%' {
-		l.addLabelSub(structure[1][1:])
+		l.addLabelSub(structure[1][1:]) // Locations are 64 bits
+		l.addToProgram(0)
+		l.addToProgram(0)
+		l.addToProgram(0)
+		l.addToProgram(0)
+		l.addToProgram(0)
+		l.addToProgram(0)
+		l.addToProgram(0)
 		l.addToProgram(0)
 		return nil
 	}
@@ -161,7 +228,7 @@ func (l *Lexer) parseParamOneIntOrLabel(structure []string) error {
 	if err != nil {
 		return err
 	}
-	l.addToProgram(code)
+	l.addSliceToProgram(intToBytes(code))
 	return nil
 }
 
@@ -169,7 +236,12 @@ func (l *Lexer) parseParamOneRegister(structure []string) error {
 	if len(structure) != 2 {
 		return fmt.Errorf("Expected register on line %d", l.line)
 	}
-	reg, ok := registers[structure[1]]
+
+	if structure[1][0] != '$' {
+		return fmt.Errorf("Expected register on line %d", l.line)
+	}
+
+	reg, ok := registers[structure[1][1:]]
 	if !ok {
 		return fmt.Errorf("%s is not a register", structure[1])
 	}
@@ -182,8 +254,12 @@ func (l *Lexer) parseParamsRegInt(structure []string) error {
 		return fmt.Errorf("Expected register and int on line %d", l.line)
 	}
 
+	if structure[1][0] != '$' {
+		return fmt.Errorf("Expected register on line %d", l.line)
+	}
+
 	// Register
-	reg, ok := registers[structure[1]]
+	reg, ok := registers[structure[1][1:]]
 	if !ok {
 		return fmt.Errorf("%s is not a register", structure[1])
 	}
@@ -194,17 +270,90 @@ func (l *Lexer) parseParamsRegInt(structure []string) error {
 	if err != nil {
 		return err
 	}
-	l.addToProgram(code)
+	l.addSliceToProgram(intToBytes(code))
+	return nil
+}
+
+func (l *Lexer) parseParamOneString(structure []string) error {
+	if len(structure) < 2 {
+		return fmt.Errorf("Expected string on line %d", l.line)
+	}
+
+	str := strings.Join(structure[1:], " ")
+	str = str[1:]
+	str = str[:len(str)-1]
+
+	strLen := len(str)
+	if strLen > 32768 {
+		return fmt.Errorf("String too long on line %d", l.line)
+	}
+
+	// Push string lenth
+	l.addToProgram(byte(strLen >> 8))
+	l.addToProgram(byte(strLen))
+
+	// Add string literal
+	l.addSliceToProgram([]byte(str))
+	return nil
+}
+
+func (l *Lexer) parseParamsRegString(structure []string) error {
+	if len(structure) < 3 {
+		return fmt.Errorf("Expected string on line %d", l.line)
+	}
+
+	if structure[1][0] != '$' {
+		return fmt.Errorf("Expected register on line %d", l.line)
+	}
+
+	// Register
+	reg, ok := registers[structure[1][1:]]
+	if !ok {
+		return fmt.Errorf("%s is not a register", structure[1])
+	}
+	l.addToProgram(reg)
+
+	// String literal
+	str := strings.Join(structure[2:], " ")
+	str = str[1:]
+	str = str[:len(str)-1]
+
+	strLen := len(str)
+	if strLen > 32768 {
+		return fmt.Errorf("String too long on line %d", l.line)
+	}
+
+	// Push string lenth
+	l.addToProgram(byte(strLen >> 8))
+	l.addToProgram(byte(strLen))
+
+	// Add string literal
+	l.addSliceToProgram([]byte(str))
 	return nil
 }
 
 func (l *Lexer) subLabels() error {
 	for _, sub := range l.labelSubs {
-		index, ok := l.labels[sub.label]
+		loc, ok := l.labels[sub.label]
 		if !ok {
 			return fmt.Errorf("Label %s not defined", sub.label)
 		}
-		l.program[sub.pos] = index
+
+		locBytes := intToBytes(loc)
+		l.program[sub.pos] = locBytes[0]
+		l.program[sub.pos+1] = locBytes[1]
+		l.program[sub.pos+2] = locBytes[2]
+		l.program[sub.pos+3] = locBytes[3]
+		l.program[sub.pos+4] = locBytes[4]
+		l.program[sub.pos+5] = locBytes[5]
+		l.program[sub.pos+6] = locBytes[6]
+		l.program[sub.pos+7] = locBytes[7]
 	}
 	return nil
+}
+
+func intToBytes(i int64) []byte {
+	out := make([]byte, 8)
+	binary.PutVarint(out, i)
+	return out
 }

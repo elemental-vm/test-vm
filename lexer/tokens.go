@@ -2,32 +2,43 @@ package lexer
 
 import "github.com/elemental-vm/test-vm/vm"
 
-var bytecodes = map[string]int64{
-	"HALT":    vm.Halt,
-	"EXIT":    vm.Halt,
-	"PUSH":    vm.Push,
+var bytecodes = map[string]byte{
+	"HALT": vm.Halt,
+	"EXIT": vm.Halt,
+
+	"PUSHI":   vm.PushI,
+	"PUSHSTR": vm.PushStr,
 	"PUSHREG": vm.PushReg,
-	"POP":     vm.Pop,
-	"POPREG":  vm.PopReg,
-	"ADD":     vm.Add,
-	"SUB":     vm.Sub,
-	"SET":     vm.Set,
-	"JMP":     vm.Jump,
-	"JMPGZ":   vm.JumpGtz,
-	"JMPLZ":   vm.JumpLtz,
-	"JMPEQ":   vm.JumpEq,
-	"JMPNEQ":  vm.JumpNeq,
-	"PRINT":   vm.Print,
-	"RET":     vm.Return,
-	"CALL":    vm.Call,
-	"PRINTS":  vm.PrintS,
 	"SWAP":    vm.Swap,
 	"DUP":     vm.Dup,
-	"MUL":     vm.Mul,
-	"DIV":     vm.Div,
+
+	"POP":   vm.Pop,
+	"STORE": vm.Store,
+
+	"ADD": vm.Add,
+	"SUB": vm.Sub,
+	"MUL": vm.Mul,
+	"DIV": vm.Div,
+
+	"SETI":   vm.SetI,
+	"SETSTR": vm.SetStr,
+
+	"JMP":    vm.Jump,
+	"JMPGZ":  vm.JumpGtz,
+	"JMPLZ":  vm.JumpLtz,
+	"JMPEQ":  vm.JumpEq,
+	"JMPNEQ": vm.JumpNeq,
+
+	"PRINT":  vm.Print,
+	"DUMP":   vm.Dump,
+	"PRINTR": vm.PrintR,
+	"DUMPR":  vm.DumpR,
+
+	"RET":  vm.Return,
+	"CALL": vm.Call,
 }
 
-var registers = map[string]int64{
+var registers = map[string]byte{
 	"RT": vm.RT,
 	"A":  vm.A,
 	"B":  vm.B,
