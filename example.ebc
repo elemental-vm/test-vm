@@ -1,0 +1,22 @@
+; Elementary Bytecode
+;
+; HALT/EXIT # = Halt the program with exit code #
+; PUSH #      = Push the value # onto the stack
+; PUSHREG reg = Push the value in register reg to stack
+; POP         = Pop the stack, discards the value
+; POPREG reg  = Pop the stack and assign the value to register reg
+; ADD         = Add the top two items on the stack, places the result on the stack
+; SUB         = Subtract the top two items on the stack, places the result on the stack
+; SET reg #   = Set register reg to value #
+; JMP #       = Jump unconditionally to instruction #
+; JMPGZ #     = Jump to instruction # if top of stack is greater than 0, does not pop value
+; PRINT       = Print the top of stack
+;
+; Keep in mind, parameters count towards the instruction count and it starts at 0.
+
+PUSH 100  ; Instructions 0, 1
+PUSH 1    ; Instructions 2, 3
+SUB       ; Instruction 4
+PRINT     ; Instruction 5
+JMPGZ 2   ; Instructions 6, 7
+EXIT 0    ; Instructions 8, 9
