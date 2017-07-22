@@ -2,7 +2,6 @@ package lexer
 
 import (
 	"bufio"
-	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -13,7 +12,8 @@ import (
 )
 
 type Lexer struct {
-	r *bufio.Reader
+	r    *bufio.Reader
+	line int
 
 	program []int64
 }
@@ -49,6 +49,8 @@ func (l *Lexer) Parse() ([]int64, error) {
 			}
 			quit = true
 		}
+		l.line++
+
 		line = strings.TrimSpace(line)
 		if line == "" || line[0] == ';' {
 			continue
@@ -65,84 +67,78 @@ func (l *Lexer) Parse() ([]int64, error) {
 
 		bytecode, ok := bytecodes[structure[0]]
 		if !ok {
-			return nil, fmt.Errorf("Unknown code %s", structure[0])
+			return nil, fmt.Errorf("Unknown instruction %s on line %d", structure[0], l.line)
 		}
 		l.addToProgram(bytecode)
 
 		switch bytecode {
 		case vm.Halt:
-			if parts != 2 {
-				return nil, errors.New("Expected int after HALT")
-			}
-			code, err := strconv.ParseInt(structure[1], 10, 64)
-			if err != nil {
-				return nil, err
-			}
-			l.addToProgram(code)
+			err = l.parseParamOneInt(structure)
 		case vm.Push:
-			if parts != 2 {
-				return nil, errors.New("Expected int after PUSH")
-			}
-			code, err := strconv.ParseInt(structure[1], 10, 64)
-			if err != nil {
-				return nil, err
-			}
-			l.addToProgram(code)
+			err = l.parseParamOneInt(structure)
 		case vm.PushReg:
-			if parts != 2 {
-				return nil, errors.New("Expected register after PUSHREG")
-			}
-			reg, ok := registers[structure[1]]
-			if !ok {
-				return nil, fmt.Errorf("%s is not a register", structure[1])
-			}
-			l.addToProgram(reg)
+			err = l.parseParamOneRegister(structure)
 		case vm.PopReg:
-			if parts != 2 {
-				return nil, errors.New("Expected register after POPREG")
-			}
-			reg, ok := registers[structure[1]]
-			if !ok {
-				return nil, fmt.Errorf("%s is not a register", structure[1])
-			}
-			l.addToProgram(reg)
+			err = l.parseParamOneRegister(structure)
 		case vm.Set:
-			if parts != 3 {
-				return nil, errors.New("Expected register and int after SET")
-			}
-			// Register
-			reg, ok := registers[structure[1]]
-			if !ok {
-				return nil, fmt.Errorf("%s is not a register", structure[1])
-			}
-			l.addToProgram(reg)
-
-			// Value
-			code, err := strconv.ParseInt(structure[2], 10, 64)
-			if err != nil {
-				return nil, err
-			}
-			l.addToProgram(code)
+			err = l.parseParamsRegInt(structure)
 		case vm.Jump:
-			if parts != 2 {
-				return nil, errors.New("Expected int after JMP")
-			}
-			code, err := strconv.ParseInt(structure[1], 10, 64)
-			if err != nil {
-				return nil, err
-			}
-			l.addToProgram(code)
+			err = l.parseParamOneInt(structure)
 		case vm.JumpGtz:
-			if parts != 2 {
-				return nil, errors.New("Expected int after JMPGZ")
-			}
-			code, err := strconv.ParseInt(structure[1], 10, 64)
-			if err != nil {
-				return nil, err
-			}
-			l.addToProgram(code)
+			err = l.parseParamOneInt(structure)
+		default:
+			err = nil
+		}
+
+		if err != nil {
+			return nil, err
 		}
 	}
 
 	return l.program, nil
+}
+
+func (l *Lexer) parseParamOneInt(structure []string) error {
+	if len(structure) != 2 {
+		return fmt.Errorf("Expected int on line %d", l.line)
+	}
+	code, err := strconv.ParseInt(structure[1], 10, 64)
+	if err != nil {
+		return err
+	}
+	l.addToProgram(code)
+	return nil
+}
+
+func (l *Lexer) parseParamOneRegister(structure []string) error {
+	if len(structure) != 2 {
+		return fmt.Errorf("Expected register on line %d", l.line)
+	}
+	reg, ok := registers[structure[1]]
+	if !ok {
+		return fmt.Errorf("%s is not a register", structure[1])
+	}
+	l.addToProgram(reg)
+	return nil
+}
+
+func (l *Lexer) parseParamsRegInt(structure []string) error {
+	if len(structure) != 3 {
+		return fmt.Errorf("Expected register and int on line %d", l.line)
+	}
+
+	// Register
+	reg, ok := registers[structure[1]]
+	if !ok {
+		return fmt.Errorf("%s is not a register", structure[1])
+	}
+	l.addToProgram(reg)
+
+	// Value
+	code, err := strconv.ParseInt(structure[2], 10, 64)
+	if err != nil {
+		return err
+	}
+	l.addToProgram(code)
+	return nil
 }

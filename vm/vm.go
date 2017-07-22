@@ -5,10 +5,10 @@ import "fmt"
 var pc int64
 
 type VM struct {
-	pc        int64
-	bc        []int64
-	registers []int64
-	stack     *stack
+	pc        int64   // Program counter
+	bc        []int64 // Bytecode (program)
+	registers []int64 // General purpose registers
+	stack     *stack  // Program stack
 }
 
 func New(in []int64) *VM {
@@ -22,7 +22,6 @@ func New(in []int64) *VM {
 func (vm *VM) Start() int64 {
 	for {
 		code := vm.fetch()
-		//fmt.Printf("Instruction %d = %d\n", vm.pc-1, code)
 
 		switch code {
 		case Halt:
