@@ -16,7 +16,7 @@ const (
 type register struct {
 	t    regType
 	iVal int64
-	sVal string
+	sVal []byte
 }
 
 type VM struct {
@@ -159,7 +159,7 @@ func (vm *VM) pushStackI(v int64) {
 	vm.sp++
 }
 
-func (vm *VM) pushStackStr(v string) {
+func (vm *VM) pushStackStr(v []byte) {
 	if vm.stack[vm.sp] == nil {
 		vm.stack[vm.sp] = &register{}
 	}
@@ -202,7 +202,7 @@ func (vm *VM) printStack() {
 		if vm.registers[sp].t == regInt {
 			out.WriteString(strconv.FormatInt(vm.stack[sp].iVal, 10))
 		} else {
-			out.WriteString(vm.stack[sp].sVal)
+			out.Write(vm.stack[sp].sVal)
 		}
 		if sp > 0 {
 			out.WriteByte(',')

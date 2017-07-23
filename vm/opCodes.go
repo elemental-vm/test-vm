@@ -156,7 +156,7 @@ func (vm *VM) getInt64() int64 {
 	return i
 }
 
-func (vm *VM) fetchString() string {
+func (vm *VM) fetchString() []byte {
 	l := (int16(vm.fetch()) << 8) + int16(vm.fetch())
 	str := make([]byte, l)
 
@@ -164,5 +164,5 @@ func (vm *VM) fetchString() string {
 		str[i] = vm.fetch()
 	}
 
-	return string(str)
+	return str
 }
