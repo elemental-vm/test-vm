@@ -1,0 +1,5 @@
+PUSHSTR "Hello"
+PUSHSTR ", World!"
+CONCAT
+PRINT
+EXIT 0

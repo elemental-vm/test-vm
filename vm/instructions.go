@@ -33,6 +33,8 @@ const (
 
 	Return // 0x17
 	Call   // 0x18
+
+	Concat // 0x19
 )
 
 // Registers

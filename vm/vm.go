@@ -131,6 +131,9 @@ func (vm *VM) Start(debug bool) byte {
 		case Call:
 			vm.opCall()
 
+		case Concat:
+			vm.opConcat()
+
 		default:
 			fmt.Printf("Unknown bytecode 0x%X", code)
 			return 1

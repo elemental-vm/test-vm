@@ -42,6 +42,7 @@ In the following table, `#` refers to any 64bit signed integer. `$reg` refers to
 | 0x16 | DUMPR   | DUMPR               | Print all registers to stdout.                                                 |
 | 0x17 | RETURN  | RETURN              | Return from a function call to the callee. *                                   |
 | 0x18 | CALL    | CALL #/%label       | Call location as a function, pushes the return address to the stack. *         |
+| 0x19 | CONCAT  | CONCAT              | Concatenate the top two stack values. Places result on TOS.                    |
 
 \* Function calling is not yet finalized. It needs work.
 
@@ -84,5 +85,7 @@ loop:   PUSHI 1
 
 TestVM has 10 general purpose registers and one reserved register. Registers 'A' through 'J' may be used however the programmer
 likes. The programmer is responsible for preserving them between function calls.
+
+In source code, registers are denoted with a dollar sign: `$A`.
 
 Register 'RT' is reserved. I intend to use it for function calls eventually. Use it at your own risk.

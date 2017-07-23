@@ -36,6 +36,8 @@ var bytecodes = map[string]byte{
 
 	"RET":  vm.Return,
 	"CALL": vm.Call,
+
+	"CONCAT": vm.Concat,
 }
 
 var registers = map[string]byte{

@@ -141,6 +141,26 @@ func (vm *VM) opCall() {
 	vm.pc = fn
 }
 
+func (vm *VM) opConcat() {
+	right := vm.popStack()
+	if right.t != regStr {
+		vm.errorMsg = "CONCAT only works on strings"
+		return
+	}
+
+	left := vm.popStack()
+	if right.t != regStr {
+		vm.errorMsg = "CONCAT only works on strings"
+		return
+	}
+
+	new := make([]byte, len(right.sVal)+len(left.sVal))
+	copy(new, left.sVal)
+	copy(new[len(left.sVal):], right.sVal)
+
+	vm.pushStackStr(new)
+}
+
 func (vm *VM) getInt64() int64 {
 	buf := make([]byte, 8)
 	buf[0] = vm.fetch()
