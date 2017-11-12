@@ -125,7 +125,7 @@ func (l *Lexer) Parse() ([]byte, error) {
 			continue
 		}
 
-		bytecode, ok := bytecodes[structure[0]]
+		bytecode, ok := bytecodes[strings.ToUpper(structure[0])]
 		if !ok {
 			return nil, fmt.Errorf("Unknown instruction %s on line %d", structure[0], l.line)
 		}
