@@ -12,8 +12,9 @@ var bytecodes = map[string]byte{
 	"SWAP":    vm.Swap,
 	"DUP":     vm.Dup,
 
-	"POP":   vm.Pop,
-	"STORE": vm.Store,
+	"POP":    vm.Pop,
+	"POPREG": vm.PopReg,
+	"STORE":  vm.Store,
 
 	"ADD": vm.Add,
 	"SUB": vm.Sub,

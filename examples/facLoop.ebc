@@ -1,17 +1,17 @@
 ;; This file demonstrates a factorial generator using a loop.
 
-        SETI $A 0       ; The number of which we want the factorial
-        SETI $B 1       ; Continuous product
+        SETI $A 0      ; The number of which we want the factorial
+        SETI $B 1      ; Continuous product
         PUSHI 20       ; To populate A with seed value
-loop:   STORE $A        ; Pop the new value of A (A = A - 1)
-        PUSHREG $A      ; Push the value of register A to stack
-        PUSHREG $B      ; Push the value of register B to stack
+loop:   POPREG $A      ; Pop the new value of A (A = A - 1)
+        PUSHREG $A     ; Push the value of register A to stack
+        PUSHREG $B     ; Push the value of register B to stack
         MUL            ; Multiple registers A and B
-        STORE $B        ; Save product to register B
-        PUSHREG $A      ; Push register A to decrement
+        POPREG $B      ; Save product to register B
+        PUSHREG $A     ; Push register A to decrement
         PUSHI 1
         SUB            ; Subtract 1 from A
         JMPGZ %loop    ; Loop until A == 0
-        PUSHREG $B      ; Push B to print
+        PUSHREG $B     ; Push B to print
         PRINT          ; Print result
         EXIT 0

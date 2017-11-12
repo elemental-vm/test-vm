@@ -22,27 +22,28 @@ In the following table, `#` refers to any 64bit signed integer. `$reg` refers to
 | 0x02 | PUSHSTR | PUSHSTR "Hello"     | Push a string onto the stack.                                                  |
 | 0x03 | PUSHREG | PUSHREG $reg        | Push the value in $reg onto the stack.                                         |
 | 0x04 | POP     | POP                 | Pop TOS. Discards value.                                                       |
-| 0x05 | STORE   | STORE $reg          | Store TOS value to $reg. Does not pop stack.                                   |
-| 0x06 | SWAP    | SWAP                | Swap the two TOS values. E.g: [1, 3, 4, 7] -> [3, 1, 4, 7].                    |
-| 0x07 | DUP     | DUP                 | Push a copy of TOS onto the stack. E.g: [3, 4, 7] -> [3, 3, 4, 7].             |
-| 0x08 | ADD     | ADD                 | Add the two TOS values, pushes result onto stack.                              |
-| 0x09 | SUB     | SUB                 | Subtract the two TOS values, pushes result onto stack.                         |
-| 0x0A | MUL     | MUL                 | Multiply the two TOS values, pushes result onto stack.                         |
-| 0x0B | DIV     | DIV                 | Divide the two TOS values, pushes result onto stack.                           |
-| 0x0C | SETI    | SETI $reg #         | Set $reg to #.                                                                 |
-| 0x0D | SETSTR  | SETSTR $reg "Hello" | Set $reg to string.                                                            |
-| 0x0E | JUMP    | JUMP #/%label       | Unconditionally jump to location.                                              |
-| 0x0F | JUMPGTZ | JUMPGTZ #/%label    | Jump to location if TOS is greater than 0.                                     |
-| 0x10 | JUMPLTZ | JUMPLTZ #/%label    | Jump to location if TOS is less than 0.                                        |
-| 0x11 | JUMPEQ  | JUMPEQ #/%label     | Jump to location if TOS is equal to 0.                                         |
-| 0x12 | JUMPNEQ | JUMPNEQ #/%label    | Jump to location if TOS is not equal to 0.                                     |
-| 0x13 | PRINT   | PRINT               | Print TOS value to stdout.                                                     |
-| 0x14 | PRINTR  | PRINTR $reg         | Print value of $reg.                                                           |
-| 0x15 | DUMP    | DUMP                | Print the full stack to stdout.                                                |
-| 0x16 | DUMPR   | DUMPR               | Print all registers to stdout.                                                 |
-| 0x17 | RETURN  | RETURN              | Return from a function call to the callee. *                                   |
-| 0x18 | CALL    | CALL #/%label       | Call location as a function, pushes the return address to the stack. *         |
-| 0x19 | CONCAT  | CONCAT              | Concatenate the top two stack values. Places result on TOS.                    |
+| 0x05 | POPREG  | POPREG $reg         | Pop TOS value into $reg.                                                       |
+| 0x06 | STORE   | STORE $reg          | Store TOS value to $reg without poping the stack.                              |
+| 0x07 | SWAP    | SWAP                | Swap the two TOS values. E.g: [1, 3, 4, 7] -> [3, 1, 4, 7].                    |
+| 0x08 | DUP     | DUP                 | Push a copy of TOS onto the stack. E.g: [3, 4, 7] -> [3, 3, 4, 7].             |
+| 0x09 | ADD     | ADD                 | Add the two TOS values, pushes result onto stack.                              |
+| 0x0A | SUB     | SUB                 | Subtract the two TOS values, pushes result onto stack.                         |
+| 0x0B | MUL     | MUL                 | Multiply the two TOS values, pushes result onto stack.                         |
+| 0x0C | DIV     | DIV                 | Divide the two TOS values, pushes result onto stack.                           |
+| 0x0D | SETI    | SETI $reg #         | Set $reg to #.                                                                 |
+| 0x0E | SETSTR  | SETSTR $reg "Hello" | Set $reg to string.                                                            |
+| 0x0F | JUMP    | JUMP #/%label       | Unconditionally jump to location.                                              |
+| 0x10 | JUMPGTZ | JUMPGTZ #/%label    | Jump to location if TOS is greater than 0.                                     |
+| 0x11 | JUMPLTZ | JUMPLTZ #/%label    | Jump to location if TOS is less than 0.                                        |
+| 0x12 | JUMPEQ  | JUMPEQ #/%label     | Jump to location if TOS is equal to 0.                                         |
+| 0x13 | JUMPNEQ | JUMPNEQ #/%label    | Jump to location if TOS is not equal to 0.                                     |
+| 0x14 | PRINT   | PRINT               | Print TOS value to stdout.                                                     |
+| 0x15 | PRINTR  | PRINTR $reg         | Print value of $reg.                                                           |
+| 0x16 | DUMP    | DUMP                | Print the full stack to stdout.                                                |
+| 0x17 | DUMPR   | DUMPR               | Print all registers to stdout.                                                 |
+| 0x18 | RETURN  | RETURN              | Return from a function call to the callee. *                                   |
+| 0x19 | CALL    | CALL #/%label       | Call location as a function, pushes the return address to the stack. *         |
+| 0x1A | CONCAT  | CONCAT              | Concatenate the top two stack values. Places result on TOS.                    |
 
 \* Function calling is not yet finalized. It needs work.
 
@@ -55,15 +56,17 @@ sign. Labels may be used before they're defined. The locations are inserted afte
 
 ```asm
 setup:  SETI $A 0
-        SETI $B 0
+        SETI $B 1
 loop:   PUSHREG $A
         PUSHREG $B
         ADD
+        JMPLZ %exit
         PRINT
         DUP
-        STORE $A
-        STORE $B
+        POPREG $A
+        POPREG $B
         JMP %loop
+exit:   HALT 0
 ```
 
 ## Comments

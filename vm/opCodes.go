@@ -24,8 +24,11 @@ func (vm *VM) opDup() {
 func (vm *VM) opPop() {
 	vm.popStack()
 }
-func (vm *VM) opStore() {
+func (vm *VM) opPopReg() {
 	vm.registers[vm.fetch()] = vm.popStack()
+}
+func (vm *VM) opStore() {
+	vm.registers[vm.fetch()] = vm.getTOS()
 }
 func (vm *VM) opSwap() {
 	vm.stack[vm.sp-2], vm.stack[vm.sp-1] = vm.stack[vm.sp-1], vm.stack[vm.sp-2]

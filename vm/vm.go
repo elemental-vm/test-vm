@@ -77,6 +77,8 @@ func (vm *VM) Start(debug bool) byte {
 			vm.opDup()
 		case Pop:
 			vm.opPop()
+		case PopReg:
+			vm.opPopReg()
 		case Store:
 			vm.opStore()
 		case Swap:

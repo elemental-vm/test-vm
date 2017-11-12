@@ -140,6 +140,8 @@ func (l *Lexer) Parse() ([]byte, error) {
 			err = l.parseParamOneRegister(structure)
 		case vm.PrintR:
 			err = l.parseParamOneRegister(structure)
+		case vm.PopReg:
+			err = l.parseParamOneRegister(structure)
 		case vm.Store:
 			err = l.parseParamOneRegister(structure)
 		case vm.SetI:
