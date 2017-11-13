@@ -1,0 +1,6 @@
+SETI $A %exit ; Set register A to memory location %exit
+JUMPREG $A    ; Jump to memory location in register A
+PUSHI 42      ; 42 should not print to std out
+PRINT
+
+exit: HALT 0
