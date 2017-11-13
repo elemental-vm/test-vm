@@ -113,10 +113,14 @@ func (l *Lexer) Parse() ([]byte, error) {
 		text := strings.SplitN(line, ";", 2)
 		line = strings.TrimSpace(text[0])
 
-		lineLabel := strings.Split(line, ":")
-		if len(lineLabel) > 1 {
+		lineLabel := strings.SplitN(line, ":", 2)
+		if len(lineLabel) == 2 {
 			l.labels[lineLabel[0]] = l.pc
 			line = strings.TrimSpace(lineLabel[1])
+		}
+
+		if line == "" {
+			continue
 		}
 
 		structure := strings.Split(line, " ")
