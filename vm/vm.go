@@ -1,8 +1,10 @@
 package vm
 
 import (
+	"bufio"
 	"bytes"
 	"fmt"
+	"os"
 	"strconv"
 )
 
@@ -40,8 +42,10 @@ func (v *vmValue) dup() *vmValue {
 
 type VM struct {
 	flags struct {
-		debug bool
-		zero  int8
+		debug  bool
+		step   bool
+		noStep bool
+		zero   int8
 	}
 	errorMsg string
 
@@ -80,9 +84,28 @@ func (vm *VM) Start(debug bool) byte {
 			fmt.Printf("Executing 0x%X\n", code)
 		}
 
+		if vm.flags.step {
+			vm.printRegisters()
+			fmt.Print("Stack: ")
+			vm.printStack()
+			fmt.Printf("Instruction: %s; Flags: zero = %d\n", instructions[code], vm.flags.zero)
+			fmt.Print("> ")
+			resp, _ := bufio.NewReader(os.Stdin).ReadBytes('\n')
+			if bytes.Equal(resp, []byte("next\n")) {
+				vm.flags.step = false
+			} else if bytes.Equal(resp, []byte("continue\n")) {
+				vm.flags.step = false
+				vm.flags.noStep = true
+			}
+		}
+
 		switch code {
 		case Halt:
 			return vm.fetch()
+		case Step:
+			if !vm.flags.noStep {
+				vm.flags.step = true
+			}
 
 		case PushI:
 			vm.opPushI()

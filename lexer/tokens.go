@@ -48,6 +48,8 @@ var bytecodes = map[string]byte{
 	"JMPZLZ":  vm.JumpZLtz,
 	"JMPZEQ":  vm.JumpZEq,
 	"JMPZNEQ": vm.JumpZNeq,
+
+	"STEP": vm.Step,
 }
 
 var registers = map[string]byte{

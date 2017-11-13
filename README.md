@@ -10,7 +10,7 @@ Programs are written in plain text. Binary files are not supported yet.
 
 ## Instructions
 
-The instructions set is quite limited, but provides enough for simple programs.
+The instructions set is quite limited, but provides enough for simple programs. Instructions are not case sensitive.
 
 In the following table, `#` refers to any 64bit signed integer. `$reg` refers to a register named A-J, RT, PC, SP, or FP.
 `%label` refers to a label in code, explanation below. `TOS` refers to the top of stack.
@@ -33,8 +33,8 @@ In the following table, `#` refers to any 64bit signed integer. `$reg` refers to
 | 0x0D | SETI    | SETI $reg #/%label  | Set $reg to # or the memory location of %label.                                |
 | 0x0E | SETSTR  | SETSTR $reg "Hello" | Set $reg to string.                                                            |
 | 0x0F | JUMP    | JMP #/%label        | Unconditionally jump to location.                                              |
-| 0x10 | JUMPGTZ | JMPGTZ #/%label     | Jump to location if TOS is greater than 0.                                     |
-| 0x11 | JUMPLTZ | JMPLTZ #/%label     | Jump to location if TOS is less than 0.                                        |
+| 0x10 | JUMPGZ  | JMPGZ #/%label      | Jump to location if TOS is greater than 0.                                     |
+| 0x11 | JUMPLZ  | JMPLZ #/%label      | Jump to location if TOS is less than 0.                                        |
 | 0x12 | JUMPEQ  | JMPEQ #/%label      | Jump to location if TOS is equal to 0.                                         |
 | 0x13 | JUMPNEQ | JMPNEQ #/%label     | Jump to location if TOS is not equal to 0.                                     |
 | 0x14 | PRINT   | PRINT               | Print TOS value to stdout.                                                     |
@@ -47,22 +47,25 @@ In the following table, `#` refers to any 64bit signed integer. `$reg` refers to
 | 0x1B | PARAM   | PARAM $reg #        | Move parameter # to $reg.                                                      |
 | 0x1C | JUMPREG | JMPREG $reg         | Jump to location store in $reg.                                                |
 | 0x1D | COMPARE | CMP $reg $reg       | Compare the values of two registers. Sets the zero flag.                       |
-| 0x1E | JUMPZGTZ| JMPZGTZ #/%label    | Jump to location if the zero flag is greater than 0.                           |
-| 0x1F | JUMPZLTZ| JMPZLTZ #/%label    | Jump to location if the zero flag is less than 0.                              |
+| 0x1E | JUMPZGZ | JMPZGZ #/%label     | Jump to location if the zero flag is greater than 0.                           |
+| 0x1F | JUMPZLZ | JMPZLZ #/%label     | Jump to location if the zero flag is less than 0.                              |
 | 0x20 | JUMPZEQ | JMPZEQ #/%label     | Jump to location if the zero flag is equal to 0.                               |
 | 0x21 | JUMPZNEQ| JMPZNEQ #/%label    | Jump to location if the zero flag is not equal to 0.                           |
+| 0x22 | STEP    | STEP                | Enable step debugging.                                                         |
 
 ## Labels
 
 Labels can be used in source code in place for instruction numbers for locations. It's highly recommended to use labels
 as they will automatically adjust with code changes while hard-coded addresses won't. A line can have a label applied to
-it by prefixing the line with characters followed by a colon. Labels can be referenced by prefixing a label with a percent
+it by prefixing the line with characters followed by a colon. A label can be on a line by itself as well.
+Labels can be referenced by prefixing a label with a percent
 sign. Labels may be used before they're defined. The locations are inserted after the full source has been parsed.
 
 ```asm
 setup:  SETI $A 0
         SETI $B 1
-loop:   PUSHREG $A
+loop:
+        PUSHREG $A
         PUSHREG $B
         ADD
         JMPLZ %exit
@@ -92,10 +95,18 @@ loop:   PUSHI 1
 ## Registers
 
 TestVM has 10 general purpose registers and four special purpose registers. Registers 'A' through 'J' may be used however the
-programmer likes. The programmer is responsible for preserving them between function calls.
+programmer likes. The programmer is responsible for preserving them between function calls. Register names are not
+case sensitive.
 
 In source code, registers are denoted with a dollar sign: `$A`.
 
 Registers PC, SP, FP, and RT are special purpose. The registers are for the Program Counter, Stack Pointer, Frame Pointer, and
-Return address respectively. Currently offsets are not possible and the FP and RT registers aren't used. They will eventually
-be used once proper function calls are implemented.
+Return address respectively. Currently offsets are not possible.
+
+## Step Debugging
+
+With step debugging you can go instruction by instruction through a program. On each step the registers, stack,
+and next instruction will be printed. The debugger will wait for input before continuing. Just pressing enter
+will execute the current instruction and then break on the next one. The command `next` will continue execution
+until another STEP instruction is encountered in which case debugging will be enabled again. The command `continue`
+will continue execution and ignore any STEP instructions for the rest of the execution.

@@ -46,7 +46,58 @@ const (
 	JumpZLtz // 0x1F
 	JumpZEq  // 0x20
 	JumpZNeq // 0x21
+
+	Step // 0x22
 )
+
+var instructions = map[byte]string{
+	Halt: "Halt",
+
+	PushI:   "PushI",
+	PushStr: "PushStr",
+	PushReg: "PushReg",
+	Pop:     "Pop",
+	PopReg:  "PopReg",
+	Store:   "Store",
+	Swap:    "Swap",
+	Dup:     "Dup",
+
+	Add: "Add",
+	Sub: "Sub",
+	Mul: "Mul",
+	Div: "Div",
+
+	SetI:   "SetI",
+	SetStr: "SetStr",
+
+	Jump:    "Jump",
+	JumpGtz: "JumpGtz",
+	JumpLtz: "JumpLtz",
+	JumpEq:  "JumpEq",
+	JumpNeq: "JumpNeq",
+
+	Print:  "Print",
+	PrintR: "PrintR",
+	Dump:   "Dump",
+	DumpR:  "DumpR",
+
+	Return: "Return",
+	Call:   "Call",
+
+	Concat: "Concat",
+
+	Param:   "Param",
+	JumpReg: "JumpReg",
+
+	Compare: "Compare",
+
+	JumpZGtz: "JumpZGtz",
+	JumpZLtz: "JumpZLtz",
+	JumpZEq:  "JumpZEq",
+	JumpZNeq: "JumpZNeq",
+
+	Step: "Step",
+}
 
 // Registers
 const (
