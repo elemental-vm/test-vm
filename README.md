@@ -32,11 +32,11 @@ In the following table, `#` refers to any 64bit signed integer. `$reg` refers to
 | 0x0C | DIV     | DIV                 | Divide the two TOS values, pushes result onto stack.                           |
 | 0x0D | SETI    | SETI $reg #/%label  | Set $reg to # or the memory location of %label.                                |
 | 0x0E | SETSTR  | SETSTR $reg "Hello" | Set $reg to string.                                                            |
-| 0x0F | JUMP    | JUMP #/%label       | Unconditionally jump to location.                                              |
-| 0x10 | JUMPGTZ | JUMPGTZ #/%label    | Jump to location if TOS is greater than 0.                                     |
-| 0x11 | JUMPLTZ | JUMPLTZ #/%label    | Jump to location if TOS is less than 0.                                        |
-| 0x12 | JUMPEQ  | JUMPEQ #/%label     | Jump to location if TOS is equal to 0.                                         |
-| 0x13 | JUMPNEQ | JUMPNEQ #/%label    | Jump to location if TOS is not equal to 0.                                     |
+| 0x0F | JUMP    | JMP #/%label        | Unconditionally jump to location.                                              |
+| 0x10 | JUMPGTZ | JMPGTZ #/%label     | Jump to location if TOS is greater than 0.                                     |
+| 0x11 | JUMPLTZ | JMPLTZ #/%label     | Jump to location if TOS is less than 0.                                        |
+| 0x12 | JUMPEQ  | JMPEQ #/%label      | Jump to location if TOS is equal to 0.                                         |
+| 0x13 | JUMPNEQ | JMPNEQ #/%label     | Jump to location if TOS is not equal to 0.                                     |
 | 0x14 | PRINT   | PRINT               | Print TOS value to stdout.                                                     |
 | 0x15 | PRINTR  | PRINTR $reg         | Print value of $reg.                                                           |
 | 0x16 | DUMP    | DUMP                | Print the full stack to stdout.                                                |
@@ -45,7 +45,12 @@ In the following table, `#` refers to any 64bit signed integer. `$reg` refers to
 | 0x19 | CALL    | CALL #/%label       | Call location as a function, stores return address in $RT                      |
 | 0x1A | CONCAT  | CONCAT              | Concatenate the top two stack values. Places result on TOS.                    |
 | 0x1B | PARAM   | PARAM $reg #        | Move parameter # to $reg.                                                      |
-| 0x1C | JUMPREG | JUMPREG $reg        | Jump to location store in $reg.                                                |
+| 0x1C | JUMPREG | JMPREG $reg         | Jump to location store in $reg.                                                |
+| 0x1D | COMPARE | CMP $reg $reg       | Compare the values of two registers. Sets the zero flag.                       |
+| 0x1E | JUMPZGTZ| JMPZGTZ #/%label    | Jump to location if the zero flag is greater than 0.                           |
+| 0x1F | JUMPZLTZ| JMPZLTZ #/%label    | Jump to location if the zero flag is less than 0.                              |
+| 0x20 | JUMPZEQ | JMPZEQ #/%label     | Jump to location if the zero flag is equal to 0.                               |
+| 0x21 | JUMPZNEQ| JMPZNEQ #/%label    | Jump to location if the zero flag is not equal to 0.                           |
 
 ## Labels
 

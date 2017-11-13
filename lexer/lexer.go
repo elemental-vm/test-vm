@@ -166,6 +166,16 @@ func (l *Lexer) Parse() ([]byte, error) {
 			err = l.parseParamsRegInt(structure)
 		case vm.JumpReg:
 			err = l.parseParamOneRegister(structure)
+		case vm.Compare:
+			err = l.parseParamsTwoRegisters(structure)
+		case vm.JumpZGtz:
+			err = l.parseParamOneIntOrLabel(structure)
+		case vm.JumpZLtz:
+			err = l.parseParamOneIntOrLabel(structure)
+		case vm.JumpZEq:
+			err = l.parseParamOneIntOrLabel(structure)
+		case vm.JumpZNeq:
+			err = l.parseParamOneIntOrLabel(structure)
 		default:
 			err = nil
 		}
@@ -247,7 +257,7 @@ func (l *Lexer) parseParamsRegIntOrLabel(structure []string) error {
 		return fmt.Errorf("Expected register on line %d", l.line)
 	}
 
-	reg, ok := registers[structure[1][1:]]
+	reg, ok := getRegister(structure[1][1:])
 	if !ok {
 		return fmt.Errorf("%s is not a register", structure[1])
 	}
@@ -283,9 +293,38 @@ func (l *Lexer) parseParamOneRegister(structure []string) error {
 		return fmt.Errorf("Expected register on line %d", l.line)
 	}
 
-	reg, ok := registers[structure[1][1:]]
+	reg, ok := getRegister(structure[1][1:])
 	if !ok {
 		return fmt.Errorf("%s is not a register", structure[1])
+	}
+	l.addToProgram(reg)
+	return nil
+}
+
+func (l *Lexer) parseParamsTwoRegisters(structure []string) error {
+	if len(structure) != 3 {
+		return fmt.Errorf("Expected register on line %d", l.line)
+	}
+
+	// First register
+	if structure[1][0] != '$' {
+		return fmt.Errorf("Expected register on line %d", l.line)
+	}
+
+	reg, ok := getRegister(structure[1][1:])
+	if !ok {
+		return fmt.Errorf("%s is not a register", structure[1])
+	}
+	l.addToProgram(reg)
+
+	// Second register
+	if structure[2][0] != '$' {
+		return fmt.Errorf("Expected register on line %d", l.line)
+	}
+
+	reg, ok = getRegister(structure[2][1:])
+	if !ok {
+		return fmt.Errorf("%s is not a register", structure[2])
 	}
 	l.addToProgram(reg)
 	return nil
@@ -301,7 +340,7 @@ func (l *Lexer) parseParamsRegInt(structure []string) error {
 	}
 
 	// Register
-	reg, ok := registers[structure[1][1:]]
+	reg, ok := getRegister(structure[1][1:])
 	if !ok {
 		return fmt.Errorf("%s is not a register", structure[1])
 	}
@@ -349,7 +388,7 @@ func (l *Lexer) parseParamsRegString(structure []string) error {
 	}
 
 	// Register
-	reg, ok := registers[structure[1][1:]]
+	reg, ok := getRegister(structure[1][1:])
 	if !ok {
 		return fmt.Errorf("%s is not a register", structure[1])
 	}
@@ -391,7 +430,7 @@ func (l *Lexer) parseParamsIntReg(structure []string) error {
 	}
 
 	// Register
-	reg, ok := registers[structure[2][1:]]
+	reg, ok := getRegister(structure[2][1:])
 	if !ok {
 		return fmt.Errorf("%s is not a register", structure[1])
 	}
@@ -424,4 +463,9 @@ func intToBytes(i int64) []byte {
 	out := make([]byte, 8)
 	binary.PutVarint(out, i)
 	return out
+}
+
+func getRegister(name string) (byte, bool) {
+	v, ok := registers[strings.ToUpper(name)]
+	return v, ok
 }

@@ -41,6 +41,7 @@ func (v *vmValue) dup() *vmValue {
 type VM struct {
 	flags struct {
 		debug bool
+		zero  int8
 	}
 	errorMsg string
 
@@ -124,6 +125,14 @@ func (vm *VM) Start(debug bool) byte {
 			vm.opJumpEq()
 		case JumpNeq:
 			vm.opJumpNeq()
+		case JumpZGtz:
+			vm.opJumpZGtz()
+		case JumpZLtz:
+			vm.opJumpZLtz()
+		case JumpZEq:
+			vm.opJumpZEq()
+		case JumpZNeq:
+			vm.opJumpZNeq()
 		case JumpReg:
 			vm.opJumpReg()
 
@@ -157,6 +166,9 @@ func (vm *VM) Start(debug bool) byte {
 		case Param:
 			vm.opParam()
 
+		case Compare:
+			vm.opCompare()
+
 		default:
 			fmt.Printf("Unknown bytecode 0x%X\n", code)
 			return 1
@@ -165,7 +177,11 @@ func (vm *VM) Start(debug bool) byte {
 }
 
 func (vm *VM) fetch() byte {
-	c := vm.program[vm.registers[PC].iVal]
+	nextpc := vm.registers[PC].iVal
+	if nextpc >= int64(len(vm.program)) {
+		panic("Reached end of program with no HALT instruction, halting")
+	}
+	c := vm.program[nextpc]
 	vm.registers[PC].iVal++
 	return c
 }

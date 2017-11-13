@@ -135,6 +135,30 @@ func (vm *VM) opJumpNeq() {
 		vm.setPC(next)
 	}
 }
+func (vm *VM) opJumpZGtz() {
+	next := vm.getInt64()
+	if vm.flags.zero > 0 {
+		vm.setPC(next)
+	}
+}
+func (vm *VM) opJumpZLtz() {
+	next := vm.getInt64()
+	if vm.flags.zero < 0 {
+		vm.setPC(next)
+	}
+}
+func (vm *VM) opJumpZEq() {
+	next := vm.getInt64()
+	if vm.flags.zero == 0 {
+		vm.setPC(next)
+	}
+}
+func (vm *VM) opJumpZNeq() {
+	next := vm.getInt64()
+	if vm.flags.zero != 0 {
+		vm.setPC(next)
+	}
+}
 func (vm *VM) opJumpReg() {
 	reg := vm.fetch()
 	vm.setPC(vm.registers[reg].iVal)
@@ -176,6 +200,18 @@ func (vm *VM) opParam() {
 	offset := vm.getInt64()
 	val := vm.stack[vm.registers[FP].iVal-offset]
 	vm.registers[reg] = val.dup()
+}
+
+func (vm *VM) opCompare() {
+	reg1 := vm.registers[vm.fetch()].iVal
+	reg2 := vm.registers[vm.fetch()].iVal
+	if reg1 > reg2 {
+		vm.flags.zero = 1
+	} else if reg1 < reg2 {
+		vm.flags.zero = -1
+	} else {
+		vm.flags.zero = 0
+	}
 }
 
 func (vm *VM) getInt64() int64 {

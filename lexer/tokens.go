@@ -24,12 +24,12 @@ var bytecodes = map[string]byte{
 	"SETI":   vm.SetI,
 	"SETSTR": vm.SetStr,
 
-	"JMP":     vm.Jump,
-	"JMPGZ":   vm.JumpGtz,
-	"JMPLZ":   vm.JumpLtz,
-	"JMPEQ":   vm.JumpEq,
-	"JMPNEQ":  vm.JumpNeq,
-	"JUMPREG": vm.JumpReg,
+	"JMP":    vm.Jump,
+	"JMPGZ":  vm.JumpGtz,
+	"JMPLZ":  vm.JumpLtz,
+	"JMPEQ":  vm.JumpEq,
+	"JMPNEQ": vm.JumpNeq,
+	"JMPREG": vm.JumpReg,
 
 	"PRINT":  vm.Print,
 	"DUMP":   vm.Dump,
@@ -41,6 +41,13 @@ var bytecodes = map[string]byte{
 
 	"CONCAT": vm.Concat,
 	"PARAM":  vm.Param,
+
+	"CMP": vm.Compare,
+
+	"JMPZGZ":  vm.JumpZGtz,
+	"JMPZLZ":  vm.JumpZLtz,
+	"JMPZEQ":  vm.JumpZEq,
+	"JMPZNEQ": vm.JumpZNeq,
 }
 
 var registers = map[string]byte{

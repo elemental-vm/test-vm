@@ -39,6 +39,13 @@ const (
 
 	Param   // 0x1B
 	JumpReg // 0x1C
+
+	Compare // 0x1D
+
+	JumpZGtz // 0x1E
+	JumpZLtz // 0x1F
+	JumpZEq  // 0x20
+	JumpZNeq // 0x21
 )
 
 // Registers

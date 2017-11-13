@@ -1,0 +1,16 @@
+seti $a 3
+seti $b 3
+cmp $a $b
+jmpzneq %false
+
+true:
+ pushstr "True"
+ print
+ jmp %exit
+
+false:
+ pushstr "False"
+ print
+
+exit:
+ halt 0
