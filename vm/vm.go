@@ -11,9 +11,20 @@ type regType uint8
 const (
 	regInt regType = iota
 	regStr
+
+	// PC is the current program counter register
+	PC = totalUserRegisters
+	// SP is the current stack pointer register
+	SP = totalUserRegisters + 1 // (sp - 1 == TOS value)
+	// FP is the current frame pointer register
+	FP = totalUserRegisters + 2
+	// RT is the current return address register
+	RT = totalUserRegisters + 3
+
+	totalRegisters = RT + 1
 )
 
-type register struct {
+type vmValue struct {
 	t    regType
 	iVal int64
 	sVal []byte
@@ -25,24 +36,21 @@ type VM struct {
 	}
 	errorMsg string
 
-	pc int64 // Program counter
-	sp int64 // Stack pointer (sp - 1 == TOS value)
-
 	program []byte // Bytecode (program)
 
-	registers []*register // General purpose registers
-	stack     []*register // Stack
+	registers []*vmValue // General purpose registers
+	stack     []*vmValue // Stack
 }
 
 func New(in []byte) *VM {
 	vm := &VM{
 		program:   in,
-		registers: make([]*register, totalRegisters),
-		stack:     make([]*register, 1024),
+		registers: make([]*vmValue, totalRegisters),
+		stack:     make([]*vmValue, 1024),
 	}
 
 	for i := range vm.registers {
-		vm.registers[i] = &register{}
+		vm.registers[i] = &vmValue{}
 	}
 
 	return vm
@@ -144,49 +152,59 @@ func (vm *VM) Start(debug bool) byte {
 }
 
 func (vm *VM) fetch() byte {
-	c := vm.program[vm.pc]
-	vm.pc++
+	c := vm.program[vm.registers[PC].iVal]
+	vm.registers[PC].iVal++
 	return c
 }
 
-func (vm *VM) pushStack(v *register) {
-	vm.stack[vm.sp] = v
-	vm.sp++
+func (vm *VM) setPC(v int64) {
+	vm.registers[PC].iVal = v
+}
+
+func (vm *VM) getPC() int64 {
+	return vm.registers[PC].iVal
+}
+
+func (vm *VM) pushStack(v *vmValue) {
+	vm.stack[vm.registers[SP].iVal] = v
+	vm.registers[SP].iVal++
 }
 
 func (vm *VM) pushStackI(v int64) {
-	if vm.stack[vm.sp] == nil {
-		vm.stack[vm.sp] = &register{}
+	csp := vm.registers[SP].iVal
+	if vm.stack[csp] == nil {
+		vm.stack[csp] = &vmValue{}
 	}
 
-	vm.stack[vm.sp].t = regInt
-	vm.stack[vm.sp].iVal = v
-	vm.sp++
+	vm.stack[csp].t = regInt
+	vm.stack[csp].iVal = v
+	vm.registers[SP].iVal++
 }
 
 func (vm *VM) pushStackStr(v []byte) {
-	if vm.stack[vm.sp] == nil {
-		vm.stack[vm.sp] = &register{}
+	csp := vm.registers[SP].iVal
+	if vm.stack[csp] == nil {
+		vm.stack[csp] = &vmValue{}
 	}
 
-	vm.stack[vm.sp].t = regStr
-	vm.stack[vm.sp].sVal = v
-	vm.sp++
+	vm.stack[csp].t = regStr
+	vm.stack[csp].sVal = v
+	vm.registers[SP].iVal++
 }
 
-func (vm *VM) popStack() *register {
-	vm.sp--
-	sv := vm.stack[vm.sp]
-	return &register{
+func (vm *VM) popStack() *vmValue {
+	vm.registers[SP].iVal--
+	sv := vm.stack[vm.registers[SP].iVal]
+	return &vmValue{
 		t:    sv.t,
 		iVal: sv.iVal,
 		sVal: sv.sVal,
 	}
 }
 
-func (vm *VM) getTOS() *register {
-	sv := vm.stack[vm.sp-1]
-	return &register{
+func (vm *VM) getTOS() *vmValue {
+	sv := vm.stack[vm.registers[SP].iVal-1]
+	return &vmValue{
 		t:    sv.t,
 		iVal: sv.iVal,
 		sVal: sv.sVal,
@@ -194,17 +212,17 @@ func (vm *VM) getTOS() *register {
 }
 
 func (vm *VM) printStack() {
-	if vm.sp == 0 {
+	if vm.registers[SP].iVal == 0 {
 		fmt.Println("[]")
 		return
 	}
 
-	sp := vm.sp - 1
+	sp := vm.registers[SP].iVal - 1
 	var out bytes.Buffer
 	out.WriteByte('[')
 
 	for sp >= 0 {
-		if vm.registers[sp].t == regInt {
+		if vm.stack[sp].t == regInt {
 			out.WriteString(strconv.FormatInt(vm.stack[sp].iVal, 10))
 		} else {
 			out.Write(vm.stack[sp].sVal)
@@ -221,12 +239,20 @@ func (vm *VM) printStack() {
 
 func (vm *VM) printRegisters() {
 	i := byte(0)
-	for i < totalRegisters {
+	fmt.Printf("| PC: 0x%X | SP: 0x%X | FP: 0x%X | RT: 0x%X | ",
+		vm.registers[PC].iVal,
+		vm.registers[SP].iVal,
+		vm.registers[FP].iVal,
+		vm.registers[RT].iVal,
+	)
+
+	for i < totalUserRegisters {
 		if vm.registers[i].t == regInt {
-			fmt.Printf("%c: %d\n", 'A'+i, vm.registers[i].iVal)
+			fmt.Printf("%c: 0x%X | ", 'A'+i, vm.registers[i].iVal)
 		} else {
-			fmt.Printf("%c: %q\n", 'A'+i, vm.registers[i].sVal)
+			fmt.Printf("%c: %q | ", 'A'+i, vm.registers[i].sVal)
 		}
 		i++
 	}
+	fmt.Println("")
 }

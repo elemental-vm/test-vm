@@ -40,16 +40,15 @@ const (
 
 // Registers
 const (
-	A              byte = iota // 0x00
-	B                          // 0x01
-	C                          // 0x02
-	D                          // 0x03
-	E                          // 0x04
-	F                          // 0x05
-	G                          // 0x06
-	H                          // 0x07
-	I                          // 0x08
-	J                          // 0x09
-	totalRegisters             // 10
-	RT                         // 0x11
+	A                  byte = iota // 0x00
+	B                              // 0x01
+	C                              // 0x02
+	D                              // 0x03
+	E                              // 0x04
+	F                              // 0x05
+	G                              // 0x06
+	H                              // 0x07
+	I                              // 0x08
+	J                              // 0x09
+	totalUserRegisters             // 10
 )

@@ -12,7 +12,7 @@ Programs are written in plain text. Binary files are not supported yet.
 
 The instructions set is quite limited, but provides enough for simple programs.
 
-In the following table, `#` refers to any 64bit signed integer. `$reg` refers to a register named A-J, RT.
+In the following table, `#` refers to any 64bit signed integer. `$reg` refers to a register named A-J, RT, PC, SP, or FP.
 `%label` refers to a label in code, explanation below. `TOS` refers to the top of stack.
 
 | Code | Name    | Syntax              | Desc.                                                                          |
@@ -86,9 +86,11 @@ loop:   PUSHI 1
 
 ## Registers
 
-TestVM has 10 general purpose registers and one reserved register. Registers 'A' through 'J' may be used however the programmer
-likes. The programmer is responsible for preserving them between function calls.
+TestVM has 10 general purpose registers and four special purpose registers. Registers 'A' through 'J' may be used however the
+programmer likes. The programmer is responsible for preserving them between function calls.
 
 In source code, registers are denoted with a dollar sign: `$A`.
 
-Register 'RT' is reserved. I intend to use it for function calls eventually. Use it at your own risk.
+Registers PC, SP, FP, and RT are special purpose. The registers are for the Program Counter, Stack Pointer, Frame Pointer, and
+Return address respectively. Currently offsets are not possible and the FP and RT registers aren't used. They will eventually
+be used once proper function calls are implemented.

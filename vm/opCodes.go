@@ -31,7 +31,8 @@ func (vm *VM) opStore() {
 	vm.registers[vm.fetch()] = vm.getTOS()
 }
 func (vm *VM) opSwap() {
-	vm.stack[vm.sp-2], vm.stack[vm.sp-1] = vm.stack[vm.sp-1], vm.stack[vm.sp-2]
+	csp := vm.registers[SP].iVal
+	vm.stack[csp-2], vm.stack[csp-1] = vm.stack[csp-1], vm.stack[csp-2]
 }
 
 func (vm *VM) opAdd() {
@@ -108,40 +109,43 @@ func (vm *VM) opSetStr() {
 }
 
 func (vm *VM) opJump() {
-	vm.pc = vm.getInt64()
+	vm.setPC(vm.getInt64())
 }
 func (vm *VM) opJumpGtz() {
 	next := vm.getInt64()
 	if vm.getTOS().iVal > 0 {
-		vm.pc = next
+		vm.setPC(next)
 	}
 }
 func (vm *VM) opJumpLtz() {
 	next := vm.getInt64()
 	if vm.getTOS().iVal < 0 {
-		vm.pc = next
+		vm.setPC(next)
 	}
 }
 func (vm *VM) opJumpEq() {
 	next := vm.getInt64()
 	if vm.getTOS().iVal == 0 {
-		vm.pc = next
+		vm.setPC(next)
 	}
 }
 func (vm *VM) opJumpNeq() {
 	next := vm.getInt64()
 	if vm.getTOS().iVal != 0 {
-		vm.pc = next
+		vm.setPC(next)
 	}
 }
 
 func (vm *VM) opReturn() {
-	vm.pc = vm.popStack().iVal
+	vm.setPC(vm.popStack().iVal)
+	//vm.setPC(vm.registers[RT].iVal)
 }
 func (vm *VM) opCall() {
 	fn := vm.getInt64()
-	vm.pushStackI(vm.pc)
-	vm.pc = fn
+	cpc := vm.getPC()
+	vm.pushStackI(cpc)
+	vm.registers[RT].iVal = cpc
+	vm.setPC(fn)
 }
 
 func (vm *VM) opConcat() {

@@ -43,6 +43,9 @@ var bytecodes = map[string]byte{
 
 var registers = map[string]byte{
 	"RT": vm.RT,
+	"SP": vm.SP,
+	"FP": vm.FP,
+	"PC": vm.PC,
 	"A":  vm.A,
 	"B":  vm.B,
 	"C":  vm.C,
