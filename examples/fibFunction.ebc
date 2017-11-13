@@ -1,0 +1,44 @@
+main:
+  pushreg $fp           ; Save file pointer
+  pushi 30              ; Set function argument
+  call %fib_entry       ; Call fibonacci function
+  print                 ; Print returned value
+  halt 0                ; Exit
+
+fib_entry:
+  pushreg $rt           ; Save return address
+  step
+  seti $b 0             ; Use for comparison later
+  param $a 1            ; Get first parameter, store in $a
+  pushreg $a            ; Put first parameter on stack
+  pushi 1
+  sub                   ; Subtract 1
+  popreg $c             ; Save result to register $c
+  cmp $c $b             ; Compare result to 0. Given 0 or 1, the result will be -1 or 0
+  jmpzgz %recursive     ; If the result is greater than 0, recursively get a number
+  pushreg $a            ; Push the result onto the stack for return
+  jmp %return           ; Jump to return code
+recursive:
+  pushreg $fp           ; Save current file pointer
+  pushreg $a            ; Push parameter on stack
+  pushi 1
+  sub                   ; Subtract one, used as parameter for function call
+  call %fib_entry       ; Call function recursively
+  swap                  ; Swap values so frame pointer is at the top
+  popreg $fp            ; Restore frame pointer
+  param $a 1            ; The the parameter again
+  pushreg $fp           ; Push the frame pointer back on the stack
+  pushreg $a            ; Push the parameter on the stack
+  pushi 2
+  sub                   ; Subtract 2, used as parameter for function call
+  call %fib_entry       ; Call function recursively
+  swap                  ; Swap so frame pointer is at the top
+  popreg $fp            ; Restore frame pointer
+  add                   ; Add the last two results, continue to return
+
+return:
+  popreg $a       ; Store return value in register temporarily
+  popreg $rt      ; Restore return address
+  pop             ; Pop parameter
+  pushreg $a      ; Put return value back on the stack
+  return          ; Jump to return address
