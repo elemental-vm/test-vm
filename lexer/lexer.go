@@ -145,7 +145,7 @@ func (l *Lexer) Parse() ([]byte, error) {
 		case vm.Store:
 			err = l.parseParamOneRegister(structure)
 		case vm.SetI:
-			err = l.parseParamsRegInt(structure)
+			err = l.parseParamsRegIntOrLabel(structure)
 		case vm.Jump:
 			err = l.parseParamOneIntOrLabel(structure)
 		case vm.JumpGtz:
@@ -162,6 +162,10 @@ func (l *Lexer) Parse() ([]byte, error) {
 			err = l.parseParamOneString(structure)
 		case vm.SetStr:
 			err = l.parseParamsRegString(structure)
+		case vm.Param:
+			err = l.parseParamsRegInt(structure)
+		case vm.JumpReg:
+			err = l.parseParamOneRegister(structure)
 		default:
 			err = nil
 		}
@@ -227,6 +231,42 @@ func (l *Lexer) parseParamOneIntOrLabel(structure []string) error {
 	}
 
 	code, err := strconv.ParseInt(structure[1], 10, 64)
+	if err != nil {
+		return err
+	}
+	l.addSliceToProgram(intToBytes(code))
+	return nil
+}
+
+func (l *Lexer) parseParamsRegIntOrLabel(structure []string) error {
+	if len(structure) != 3 {
+		return fmt.Errorf("Expected int on line %d", l.line)
+	}
+
+	if structure[1][0] != '$' {
+		return fmt.Errorf("Expected register on line %d", l.line)
+	}
+
+	reg, ok := registers[structure[1][1:]]
+	if !ok {
+		return fmt.Errorf("%s is not a register", structure[1])
+	}
+	l.addToProgram(reg)
+
+	if structure[2][0] == '%' {
+		l.addLabelSub(structure[2][1:]) // Locations are 64 bits
+		l.addToProgram(0)
+		l.addToProgram(0)
+		l.addToProgram(0)
+		l.addToProgram(0)
+		l.addToProgram(0)
+		l.addToProgram(0)
+		l.addToProgram(0)
+		l.addToProgram(0)
+		return nil
+	}
+
+	code, err := strconv.ParseInt(structure[2], 10, 64)
 	if err != nil {
 		return err
 	}
@@ -331,6 +371,32 @@ func (l *Lexer) parseParamsRegString(structure []string) error {
 
 	// Add string literal
 	l.addSliceToProgram([]byte(str))
+	return nil
+}
+
+func (l *Lexer) parseParamsIntReg(structure []string) error {
+	if len(structure) != 3 {
+		return fmt.Errorf("Expected register and int on line %d", l.line)
+	}
+
+	// Value
+	code, err := strconv.ParseInt(structure[1], 10, 64)
+	if err != nil {
+		return err
+	}
+	l.addSliceToProgram(intToBytes(code))
+
+	if structure[2][0] != '$' {
+		return fmt.Errorf("Expected register on line %d", l.line)
+	}
+
+	// Register
+	reg, ok := registers[structure[2][1:]]
+	if !ok {
+		return fmt.Errorf("%s is not a register", structure[1])
+	}
+	l.addToProgram(reg)
+
 	return nil
 }
 

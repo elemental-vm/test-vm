@@ -135,17 +135,20 @@ func (vm *VM) opJumpNeq() {
 		vm.setPC(next)
 	}
 }
+func (vm *VM) opJumpReg() {
+	reg := vm.fetch()
+	vm.setPC(vm.registers[reg].iVal)
+}
 
 func (vm *VM) opReturn() {
-	vm.setPC(vm.popStack().iVal)
-	//vm.setPC(vm.registers[RT].iVal)
+	vm.setPC(vm.registers[RT].iVal) // Set program counter to return location
 }
 func (vm *VM) opCall() {
-	fn := vm.getInt64()
-	cpc := vm.getPC()
-	vm.pushStackI(cpc)
-	vm.registers[RT].iVal = cpc
-	vm.setPC(fn)
+	fn := vm.getInt64()                           // Entry address
+	cpc := vm.getPC()                             // Current program counter
+	vm.registers[RT].iVal = cpc                   // Set return address into return address register
+	vm.registers[FP].iVal = vm.registers[SP].iVal // Set the frame pointer to the current stack pointer
+	vm.setPC(fn)                                  // Set program counter to function entrypoint
 }
 
 func (vm *VM) opConcat() {
@@ -166,6 +169,13 @@ func (vm *VM) opConcat() {
 	copy(new[len(left.sVal):], right.sVal)
 
 	vm.pushStackStr(new)
+}
+
+func (vm *VM) opParam() {
+	reg := vm.fetch()
+	offset := vm.getInt64()
+	val := vm.stack[vm.registers[FP].iVal-offset]
+	vm.registers[reg] = val.dup()
 }
 
 func (vm *VM) getInt64() int64 {

@@ -36,6 +36,9 @@ const (
 	Call   // 0x19
 
 	Concat // 0x1A
+
+	Param   // 0x1B
+	JumpReg // 0x1C
 )
 
 // Registers

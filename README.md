@@ -23,14 +23,14 @@ In the following table, `#` refers to any 64bit signed integer. `$reg` refers to
 | 0x03 | PUSHREG | PUSHREG $reg        | Push the value in $reg onto the stack.                                         |
 | 0x04 | POP     | POP                 | Pop TOS. Discards value.                                                       |
 | 0x05 | POPREG  | POPREG $reg         | Pop TOS value into $reg.                                                       |
-| 0x06 | STORE   | STORE $reg          | Store TOS value to $reg without poping the stack.                              |
+| 0x06 | STORE   | STORE $reg          | Store TOS value to $reg without popping the stack.                             |
 | 0x07 | SWAP    | SWAP                | Swap the two TOS values. E.g: [1, 3, 4, 7] -> [3, 1, 4, 7].                    |
 | 0x08 | DUP     | DUP                 | Push a copy of TOS onto the stack. E.g: [3, 4, 7] -> [3, 3, 4, 7].             |
 | 0x09 | ADD     | ADD                 | Add the two TOS values, pushes result onto stack.                              |
 | 0x0A | SUB     | SUB                 | Subtract the two TOS values, pushes result onto stack.                         |
 | 0x0B | MUL     | MUL                 | Multiply the two TOS values, pushes result onto stack.                         |
 | 0x0C | DIV     | DIV                 | Divide the two TOS values, pushes result onto stack.                           |
-| 0x0D | SETI    | SETI $reg #         | Set $reg to #.                                                                 |
+| 0x0D | SETI    | SETI $reg #/%label  | Set $reg to # or the memory location of %label.                                |
 | 0x0E | SETSTR  | SETSTR $reg "Hello" | Set $reg to string.                                                            |
 | 0x0F | JUMP    | JUMP #/%label       | Unconditionally jump to location.                                              |
 | 0x10 | JUMPGTZ | JUMPGTZ #/%label    | Jump to location if TOS is greater than 0.                                     |
@@ -41,11 +41,11 @@ In the following table, `#` refers to any 64bit signed integer. `$reg` refers to
 | 0x15 | PRINTR  | PRINTR $reg         | Print value of $reg.                                                           |
 | 0x16 | DUMP    | DUMP                | Print the full stack to stdout.                                                |
 | 0x17 | DUMPR   | DUMPR               | Print all registers to stdout.                                                 |
-| 0x18 | RETURN  | RETURN              | Return from a function call to the callee. *                                   |
-| 0x19 | CALL    | CALL #/%label       | Call location as a function, pushes the return address to the stack. *         |
+| 0x18 | RETURN  | RETURN              | Return to address in $RT                                                       |
+| 0x19 | CALL    | CALL #/%label       | Call location as a function, stores return address in $RT                      |
 | 0x1A | CONCAT  | CONCAT              | Concatenate the top two stack values. Places result on TOS.                    |
-
-\* Function calling is not yet finalized. It needs work.
+| 0x1B | PARAM   | PARAM $reg #        | Move parameter # to $reg.                                                      |
+| 0x1C | JUMPREG | JUMPREG $reg        | Jump to location store in $reg.                                                |
 
 ## Labels
 

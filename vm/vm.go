@@ -30,6 +30,14 @@ type vmValue struct {
 	sVal []byte
 }
 
+func (v *vmValue) dup() *vmValue {
+	return &vmValue{
+		t:    v.t,
+		iVal: v.iVal,
+		sVal: v.sVal,
+	}
+}
+
 type VM struct {
 	flags struct {
 		debug bool
@@ -116,6 +124,8 @@ func (vm *VM) Start(debug bool) byte {
 			vm.opJumpEq()
 		case JumpNeq:
 			vm.opJumpNeq()
+		case JumpReg:
+			vm.opJumpReg()
 
 		case Print:
 			tos := vm.getTOS()
@@ -144,8 +154,11 @@ func (vm *VM) Start(debug bool) byte {
 		case Concat:
 			vm.opConcat()
 
+		case Param:
+			vm.opParam()
+
 		default:
-			fmt.Printf("Unknown bytecode 0x%X", code)
+			fmt.Printf("Unknown bytecode 0x%X\n", code)
 			return 1
 		}
 	}
@@ -223,12 +236,13 @@ func (vm *VM) printStack() {
 
 	for sp >= 0 {
 		if vm.stack[sp].t == regInt {
-			out.WriteString(strconv.FormatInt(vm.stack[sp].iVal, 10))
+			out.WriteString("0x")
+			out.WriteString(strconv.FormatInt(vm.stack[sp].iVal, 16))
 		} else {
 			out.Write(vm.stack[sp].sVal)
 		}
 		if sp > 0 {
-			out.WriteByte(',')
+			out.WriteString(", ")
 		}
 		sp--
 	}

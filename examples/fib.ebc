@@ -24,4 +24,4 @@ fib:        SWAP                ; Swap return address with argument
 fibOne:     POP                 ; Pop an extra value
 
 fibReturn:  SWAP                ; Move return address to TOS
-            RET                 ; Return to caller
+            RETURN              ; Return to caller
