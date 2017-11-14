@@ -7,7 +7,6 @@ main:
 
 fib_entry:
   pushreg $rt           ; Save return address
-  step
   seti $b 0             ; Use for comparison later
   param $a 1            ; Get first parameter, store in $a
   pushreg $a            ; Put first parameter on stack

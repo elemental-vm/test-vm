@@ -1,5 +1,5 @@
-PUSHSTR "Hello"
-PUSHSTR ", World!"
-CONCAT
-PRINT
-EXIT 0
+pushstr "Hello"
+pushstr ", World!"
+concat
+print
+exit 0

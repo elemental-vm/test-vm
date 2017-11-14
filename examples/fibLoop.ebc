@@ -1,20 +1,20 @@
 ;; This file demonstrates finding the fibonnaci series using a loop
 
-        SETI $A 0       ; Accumulator
-        SETI $B 1       ; Secondary accumulator
-        PUSHI 0         ; I0 to survive a pop later in the loop
-        PRINT           ; Start series with a 0
-loop:   POP             ; Pop old value
-        PUSHREG $A      ; Add next fib # with last
-        PUSHREG $B
-        ADD
-        POPREG $A       ; Save new fib to B
-        PUSHREG $A      ; Get next B
-        PUSHREG $B
-        SUB
-        POPREG $B       ; Save next B
-        PUSHREG $A      ; Reload A
-        JMPLZ %quit     ; Check for overflow
-        PRINT           ; Print Fibonnaci # for series
-        JMPGZ %loop     ; Jump to loop
-quit:   EXIT 0
+  seti $A 0       ; Accumulator
+  seti $B 1       ; Secondary accumulator
+  pushi 0         ; I0 to survive a pop later in the loop
+
+loop:
+  print           ; Print current series number
+  pop             ; Pop old value
+  pushreg $A      ; Add next fib # with last
+  pushreg $B
+  add
+  popreg $A       ; Save new fib to B
+  pushreg $A      ; Get next B
+  pushreg $B
+  sub
+  popreg $B       ; Save next B
+  pushreg $A      ; Reload A
+  jmpgz %loop     ; Check for overflow and loop
+  halt 0

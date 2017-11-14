@@ -1,7 +1,7 @@
-seti $a 3
-seti $b 3
-cmp $a $b
-jmpzneq %false
+ seti $a 3
+ seti $b 3
+ cmp $a $b
+ jmpzneq %false
 
 true:
  pushstr "True"

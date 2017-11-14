@@ -1,15 +1,14 @@
-PUSHREG $FP     ; Save current frame pointer, restored later
-PUSHI 42        ; Push 42 as parameter 2 to function call
-PUSHI 43        ; Push 42 as parameter 1 to function call
-CALL %my_func   ; Call function
-POPREG $FP      ; Restore old frame pointer
-HALT 0          ; Exit
+  pushreg $fp     ; Save current frame pointer, restored later
+  pushi 42        ; Push 42 as parameter 2 to function call
+  pushi 43        ; Push 42 as parameter 1 to function call
+  call %my_func   ; Call function
+  halt 0          ; Exit
 
-my_func:    PUSHREG $RT  ; Save return address
-            PARAM $A 1   ; Set register A to first parameter
-            PARAM $B 2   ; Set register B to second parameter
-            PRINTR $A    ; Printer parameter 1
-            PRINTR $B    ; Printer parameter 2
-            POPREG $RT   ; Reset the return address
-            POP          ; Pop off parameter
-            RETURN       ; Return to $RT
+my_func:
+  param $a 1   ; Set register A to first parameter
+  param $b 2   ; Set register B to second parameter
+  printr $a    ; Printer parameter 1
+  printr $b    ; Printer parameter 2
+  pop          ; Pop off first parameter
+  pop          ; Pop off second parameter
+  return       ; Return to $RT

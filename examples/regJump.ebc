@@ -1,6 +1,7 @@
-SETI $A %exit ; Set register A to memory location %exit
-JUMPREG $A    ; Jump to memory location in register A
-PUSHI 42      ; 42 should not print to std out
-PRINT
+ seti $A %exit ; Set register A to memory location %exit
+ jumpreg $A    ; Jump to memory location in register A
+ pushi 42      ; 42 should not print to std out
+ print
 
-exit: HALT 0
+exit:
+  halt 0
