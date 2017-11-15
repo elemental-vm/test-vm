@@ -1,5 +1,5 @@
  seti $A %exit ; Set register A to memory location %exit
- jumpreg $A    ; Jump to memory location in register A
+ jmpreg $A    ; Jump to memory location in register A
  pushi 42      ; 42 should not print to std out
  print
 
